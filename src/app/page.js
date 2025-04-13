@@ -6,13 +6,14 @@ import useStore from './store';
 import Header from './components/Header/Header';
 
 export default function Home() {
-  const { tasks = [], setTasks, handleDelete, columns, editColumn, reorderTasks, addColumn } = useStore();
+  const { tasks = [], setTasks, handleDelete, columns, editColumn, reorderTasks, addColumn, deleteColumn } = useStore();
   const [newItemTitle, setNewItemTitle] = useState('');
   const [newItemDescription, setNewItemDescription] = useState('');
   const [activeAddForm, setActiveAddForm] = useState(null);
   const [showDeleteButton, setShowDeleteButton] = useState(null);
   const [editingColumnId, setEditingColumnId] = useState(null);
   const [editingTitle, setEditingTitle] = useState('');
+  const [isDraggingColumn, setIsDraggingColumn] = useState(false);
 
   const handleDragStart = (e, task, index) => {
     e.currentTarget.classList.add(styles.dragging);
@@ -40,7 +41,6 @@ export default function Home() {
     const { task: draggedTask, index: sourceIndex } = JSON.parse(e.dataTransfer.getData('text/plain'));
     
     if (draggedTask.status === newStatus) {
-      // Calculate destination index based on drop position
       const columnTasks = tasks.filter(t => t.status === newStatus);
       const dropTarget = e.target.closest(`.${styles.todoItem}`);
       let destinationIndex = columnTasks.length;
@@ -59,6 +59,41 @@ export default function Home() {
         task.id === draggedTask.id ? { ...task, status: newStatus } : task
       );
       setTasks(updatedTasks);
+    }
+  };
+
+  const handleColumnDragStart = (e, columnId) => {
+    setIsDraggingColumn(true);
+    e.dataTransfer.setData('text/plain', JSON.stringify({ type: 'column', columnId }));
+    e.currentTarget.classList.add(styles.dragging);
+  };
+
+  const handleColumnDragEnd = (e) => {
+    setIsDraggingColumn(false);
+    e.currentTarget.classList.remove(styles.dragging);
+    document.querySelector(`.${styles.deleteZone}`).classList.remove(styles.active);
+  };
+
+  const handleDeleteZoneDragOver = (e) => {
+    e.preventDefault();
+    e.currentTarget.classList.add(styles.dragOver);
+  };
+
+  const handleDeleteZoneDragLeave = (e) => {
+    e.currentTarget.classList.remove(styles.dragOver);
+  };
+
+  const handleDeleteZoneDrop = (e) => {
+    e.preventDefault();
+    e.currentTarget.classList.remove(styles.dragOver);
+    
+    try {
+      const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+      if (data.type === 'column') {
+        deleteColumn(data.columnId);
+      }
+    } catch (err) {
+      console.error('Failed to parse drag data:', err);
     }
   };
 
@@ -105,6 +140,12 @@ export default function Home() {
         onDragLeave={handleDragLeave}
         onDrop={(e) => handleDrop(e, column.id)}
       >
+        <div 
+          className={styles.dragArea}
+          draggable="true"
+          onDragStart={(e) => handleColumnDragStart(e, column.id)}
+          onDragEnd={handleColumnDragEnd}
+        />
         <div className={styles.columnHeader}>
           {editingColumnId === column.id ? (
             <input
@@ -156,47 +197,50 @@ export default function Home() {
           </div>
         ))}
 
-        <div className={styles.addTaskContainer}>
-          <button 
-            className={styles.addButton}
-            onClick={() => setActiveAddForm(activeAddForm === column.id ? null : column.id)}
-          >
-            Add Task
-          </button>
-        </div>
-
-        <div className={`${styles.addItemForm} ${activeAddForm === column.id ? styles.visible : ''}`}>
-          <input
-            type="text"
-            placeholder="Add new item title"
-            value={newItemTitle}
-            onChange={(e) => setNewItemTitle(e.target.value)}
-            className={styles.input}
-          />
-          <input
-            type="text"
-            placeholder="Add description (optional)"
-            value={newItemDescription}
-            onChange={(e) => setNewItemDescription(e.target.value)}
-            className={styles.input}
-          />
-          <div className={styles.buttonContainer}>
-            <button
-              onClick={() => handleAddItem(column.id)}
-              className={styles.button}
+        {!activeAddForm || activeAddForm !== column.id ? (
+          <div className={styles.addTaskContainer}>
+            <button 
+              className={styles.addButton}
+              onClick={() => setActiveAddForm(column.id)}
             >
-              Add Item
+              Add Task
             </button>
-            {activeAddForm === column.id && (
-              <button
-                className={styles.cancelButton}
-                onClick={() => setActiveAddForm(null)}
-              >
-                ×
-              </button>
-            )}
           </div>
-        </div>
+        ) : (
+          <>
+            <div className={styles.addTaskContainer} />
+            <div className={`${styles.addItemForm} ${styles.visible}`}>
+              <input
+                type="text"
+                placeholder="Add new item title"
+                value={newItemTitle}
+                onChange={(e) => setNewItemTitle(e.target.value)}
+                className={styles.input}
+              />
+              <input
+                type="text"
+                placeholder="Add description (optional)"
+                value={newItemDescription}
+                onChange={(e) => setNewItemDescription(e.target.value)}
+                className={styles.input}
+              />
+              <div className={styles.buttonContainer}>
+                <button
+                  onClick={() => handleAddItem(column.id)}
+                  className={styles.button}
+                >
+                  Add Item
+                </button>
+                <button
+                  className={styles.cancelButton}
+                  onClick={() => setActiveAddForm(null)}
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+          </>
+        )}
       </div>
     );
   };
@@ -209,6 +253,14 @@ export default function Home() {
         <button className={styles.addColumnButton} onClick={addColumn}>
           + Add Column
         </button>
+      </div>
+      <div 
+        className={`${styles.deleteZone} ${isDraggingColumn ? styles.active : ''}`}
+        onDragOver={handleDeleteZoneDragOver}
+        onDragLeave={handleDeleteZoneDragLeave}
+        onDrop={handleDeleteZoneDrop}
+      >
+        Drop column here to delete
       </div>
     </>
   );

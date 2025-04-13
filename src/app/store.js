@@ -18,6 +18,11 @@ const useStore = create((set) => ({
     tasks: state.tasks.filter(task => task.id !== taskId)
   })),
 
+  deleteColumn: (columnId) => set((state) => ({
+    columns: state.columns.filter(col => col.id !== columnId),
+    tasks: state.tasks.filter(task => task.status !== columnId)
+  })),
+
   addColumn: () => set((state) => {
     const newColumnId = `column-${state.columns.length + 1}`;
     const newColumn = {

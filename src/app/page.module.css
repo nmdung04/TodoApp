@@ -192,20 +192,15 @@ a.secondary {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 16px;
+  padding: 8px;
+  border-radius: 4px;
 }
 
 .columnTitle {
   font-weight: 600;
   font-size: 1.1rem;
   color: #ffffff;
-  cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 4px;
-  transition: background-color 0.2s;
-}
-
-.columnTitle:hover {
-  background: #3d3d3d;
+  width: 100%;
 }
 
 .todoItem {
@@ -293,6 +288,8 @@ a.secondary {
   align-items: center;
   gap: 8px;
   margin-top: 16px;
+  border-top: 1px solid #3d3d3d;
+  padding-top: 16px;
 }
 
 .addButton {
@@ -387,4 +384,47 @@ a.secondary {
   background: #333;
   border-color: #666;
   color: #fff;
+}
+
+.deleteZone {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 0;
+  background: rgba(255, 59, 48, 0.2);
+  backdrop-filter: blur(4px);
+  transition: height 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ff3b30;
+  font-size: 1.2rem;
+  overflow: hidden;
+}
+
+.deleteZone.active {
+  height: 100px;
+  border-top: 2px dashed #ff3b30;
+}
+
+.deleteZone.dragOver {
+  background: rgba(255, 59, 48, 0.4);
+}
+
+.dragArea {
+  height: 8px;
+  background: #3d3d3d;
+  border-radius: 4px;
+  margin-bottom: 12px;
+  cursor: grab;
+  transition: background-color 0.2s;
+}
+
+.dragArea:hover {
+  background: #4a4a4a;
+}
+
+.dragArea:active {
+  cursor: grabbing;
 }
