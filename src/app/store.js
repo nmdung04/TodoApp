@@ -18,6 +18,17 @@ const useStore = create((set) => ({
     tasks: state.tasks.filter(task => task.id !== taskId)
   })),
 
+  addColumn: () => set((state) => {
+    const newColumnId = `column-${state.columns.length + 1}`;
+    const newColumn = {
+      id: newColumnId,
+      title: `New Column ${state.columns.length + 1}`
+    };
+    return {
+      columns: [...state.columns, newColumn]
+    };
+  }),
+
   reorderTasks: (sourceIndex, destinationIndex, status) => set((state) => {
     const filteredTasks = state.tasks.filter(task => task.status === status);
     const taskToMove = filteredTasks[sourceIndex];

@@ -171,6 +171,7 @@ a.secondary {
   display: flex;
   gap: 24px;
   padding: 24px;
+  padding-top: 88px;
   min-height: 100vh;
   background: #1a1a1a;
   color: #ffffff;
@@ -366,4 +367,24 @@ a.secondary {
 
 .deleteButton:hover {
   opacity: 1;
+}
+
+.addColumnButton {
+  height: fit-content;
+  min-width: 300px;
+  background: #2d2d2d;
+  border: 2px dashed #444;
+  border-radius: 8px;
+  color: #888;
+  padding: 24px;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 16px;
+  font-size: 16px;
+}
+
+.addColumnButton:hover {
+  background: #333;
+  border-color: #666;
+  color: #fff;
 }

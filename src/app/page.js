@@ -3,9 +3,10 @@
 import { useState } from 'react';
 import styles from './page.module.css';
 import useStore from './store';
+import Header from './components/Header/Header';
 
 export default function Home() {
-  const { tasks = [], setTasks, handleDelete, columns, editColumn, reorderTasks } = useStore();
+  const { tasks = [], setTasks, handleDelete, columns, editColumn, reorderTasks, addColumn } = useStore();
   const [newItemTitle, setNewItemTitle] = useState('');
   const [newItemDescription, setNewItemDescription] = useState('');
   const [activeAddForm, setActiveAddForm] = useState(null);
@@ -93,16 +94,16 @@ export default function Home() {
     setShowDeleteButton(showDeleteButton === taskId ? null : taskId);
   };
 
-  const renderColumn = (status) => {
-    const column = columns.find(col => col.id === status);
-    const columnTasks = tasks.filter(task => task.status === status);
+  const renderColumn = (column) => {
+    const columnTasks = tasks.filter(task => task.status === column.id);
     
     return (
       <div 
+        key={column.id}
         className={styles.column}
-        onDragOver={(e) => handleDragOver(e, status)}
+        onDragOver={(e) => handleDragOver(e, column.id)}
         onDragLeave={handleDragLeave}
-        onDrop={(e) => handleDrop(e, status)}
+        onDrop={(e) => handleDrop(e, column.id)}
       >
         <div className={styles.columnHeader}>
           {editingColumnId === column.id ? (
@@ -158,14 +159,13 @@ export default function Home() {
         <div className={styles.addTaskContainer}>
           <button 
             className={styles.addButton}
-            onClick={() => setActiveAddForm(activeAddForm === status ? null : status)}
+            onClick={() => setActiveAddForm(activeAddForm === column.id ? null : column.id)}
           >
             Add Task
           </button>
-          
         </div>
 
-        <div className={`${styles.addItemForm} ${activeAddForm === status ? styles.visible : ''}`}>
+        <div className={`${styles.addItemForm} ${activeAddForm === column.id ? styles.visible : ''}`}>
           <input
             type="text"
             placeholder="Add new item title"
@@ -181,20 +181,20 @@ export default function Home() {
             className={styles.input}
           />
           <div className={styles.buttonContainer}>
-          <button
-            onClick={() => handleAddItem(status)}
-            className={styles.button}
-          >
-            Add Item
-          </button>
-          {activeAddForm === status && (
             <button
-              className={styles.cancelButton}
-              onClick={() => setActiveAddForm(null)}
+              onClick={() => handleAddItem(column.id)}
+              className={styles.button}
             >
-              ×
+              Add Item
             </button>
-          )}
+            {activeAddForm === column.id && (
+              <button
+                className={styles.cancelButton}
+                onClick={() => setActiveAddForm(null)}
+              >
+                ×
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -202,8 +202,14 @@ export default function Home() {
   };
 
   return (
-    <div className={styles.board}>
-      {columns.map(column => renderColumn(column.id))}
-    </div>
+    <>
+      <Header />
+      <div className={styles.board}>
+        {columns.map(column => renderColumn(column))}
+        <button className={styles.addColumnButton} onClick={addColumn}>
+          + Add Column
+        </button>
+      </div>
+    </>
   );
 }
